@@ -9,6 +9,13 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 gsap.registerPlugin(ScrollTrigger);
 
 const fadeInStyles = `
+  html {
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+  }
+  body {
+    overflow-x: hidden;
+  }
   @keyframes fadeIn {
     from {
       opacity: 0;
@@ -46,22 +53,6 @@ export default function Home() {
   });
   
   const heroRef = useRef<HTMLDivElement>(null);
-  const [scrollBlur, setScrollBlur] = useState(0);
-
-  // Handle scroll blur effect
-  useEffect(() => {
-    const handleScroll = () => {
-      if (heroRef.current) {
-        const heroBottom = heroRef.current.getBoundingClientRect().bottom;
-        const scrollProgress = Math.max(0, 1 - (heroBottom / window.innerHeight));
-        const blur = scrollProgress * 10; // Max 10px blur
-        setScrollBlur(blur);
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   // GSAP Animations on mount
   useEffect(() => {
@@ -107,18 +98,19 @@ export default function Home() {
       }, 0.9);
 
       // Scroll trigger animations for sections
-      gsap.utils.toArray<Element>('[data-animate]').forEach((element: Element) => {
-  gsap.from(element, {
-    opacity: 0,
-    y: 40,
-    duration: 0.8,
-    scrollTrigger: {
-      trigger: element as gsap.DOMTarget,
-      start: 'top 80%',
-      toggleActions: 'play none none reverse'
-    }
-  });
-});
+      const animatedElements = gsap.utils.toArray<Element>('[data-animate]');
+      animatedElements.forEach((element) => {
+        gsap.from(element, {
+          opacity: 0,
+          y: 40,
+          duration: 0.8,
+          scrollTrigger: {
+            trigger: element,
+            start: 'top 80%',
+            toggleActions: 'play none none reverse'
+          }
+        });
+      });
     }, heroRef);
 
     return () => ctx.revert();
@@ -232,7 +224,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white overflow-hidden">
       <style dangerouslySetInnerHTML={{ __html: fadeInStyles }} />
       
       {/* Schema Tags */}
@@ -292,11 +284,10 @@ export default function Home() {
         {/* Hero Section */}
         <section 
           ref={heroRef} 
-          className="relative h-screen flex items-center justify-center overflow-hidden bg-cover bg-center transition-all duration-100"
+          className="relative h-screen flex items-center justify-center overflow-hidden bg-cover bg-center"
           style={{
             backgroundImage: `url('https://images.pexels.com/photos/5721671/pexels-photo-5721671.jpeg?auto=compress&cs=tinysrgb&w=1600')`,
             backgroundAttachment: 'fixed',
-            filter: `blur(${scrollBlur}px)`,
           }}
         >
           {/* Dark Overlay */}
